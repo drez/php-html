@@ -93,7 +93,15 @@ class Html
         }
     }
 
-    public function __call($method, $args): Object
+    /**
+     * Call markup() on undeclared functions, markups with no shorcut
+     *
+     * @param string $method
+     * @param array $args
+     *
+     * @return void
+     */
+    public function __call($method, $args)
     {
         if (\preg_match('/^(add)(\w*)/', $method, $match)) {
             $method = strtolower($match[2]);
@@ -105,14 +113,88 @@ class Html
         if (\method_exists($this, $method)) {
             $this->$method($close, $args[0], $args[1]);
         } else if (\method_exists($this, 'add' . \ucfirst($method))) {
-            $this->$method($close, $args[0], $args[1]);
+            $markup = $this->$method($close, $args[0], $args[1], $args[2]);
         } else {
-            $this->markup($method, $close, $args[0], $args[1]);
+            $markup = $this->markup($method, $close, $args[0], $args[1], $args[2]);
+        }
+
+        if ($args[2]) {
+            return $markup;
+        } else {
+            return $this;
+        }
+    }
+
+    /**
+     * Create a HTML tag
+     *
+     * @param string $markup
+     * @param bool $close
+     * @param string $content
+     * @param array $options
+     * @param boolean $return
+     *
+     * @return void
+     */
+    private function markup($markup, $close, $content = '', $options = [], $return = false)
+    {
+
+        $options = $this->getOptions($markup, $options);
+
+        if (in_array($markup, $this->inputs) && !isset($options['value'])) {
+            $options['value'] = $content;
+            $content = '';
+        }
+
+        if ($close) {
+            $markup = $this->indent() . "<{$markup} " . $options . ">{$content}</{$markup}>{$this->newline}";
+        } else {
+
+            array_unshift($this->toClose, $markup);
+            $markup = $this->indent() . "<{$markup} " . $options . ">{$this->newline}";
+        }
+
+        if ($return) {
+            return $markup;
+        } else {
+            $this->buffer .= $markup;
         }
 
         return $this;
     }
 
+    /**
+     * Get the HTML tag to close the currently open tag or hierarchy
+     *
+     * @param boolean $all
+     * @param integer $except
+     *
+     * @return void
+     */
+    public function close($all = false, $except = 0)
+    {
+        if ($all && count($this->toClose)) {
+            $toclose = count($this->toClose) - $except;
+            for ($i = 0; $i < $toclose; $i++) {
+                $markup = array_pop($this->toClose);
+                $this->buffer .= $this->indent() . "</{$markup}>{$this->newline}";
+            }
+        } else {
+            $markup = array_pop($this->toClose);
+            $this->buffer .= $this->indent() . "</{$markup}>{$this->newline}";
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set some defaults properties when necessary
+     *
+     * @param string $markup
+     * @param array $options
+     *
+     * @return string
+     */
     private function getOptions($markup, $options): string
     {
 
@@ -134,27 +216,39 @@ class Html
         return $this->array2options($options);
     }
 
-    private function markup($markup, $close, $content = '', $options = []): Object
+    /**
+     * Generate the HTML properties from array
+     *
+     * @param array $options
+     *
+     * @return string
+     */
+    private function array2options($options)
     {
+        $optionsContent = "";
 
-        $options = $this->getOptions($markup, $options);
+        if (is_array($options)) {
+            foreach ($options as $key => $data) {
+                if (is_array($data)) {
+                    foreach ($data as $subkey => $subdata) {
+                        $optionsContent .= $key . "-" . $subkey . '="' . $subdata . '" ';
+                    }
+                } else {
+                    $optionsContent .= $key . '="' . $data . '" ';
+                }
+            }
 
-        if (in_array($markup, $this->inputs) && !isset($options['value'])) {
-            $options['value'] = $content;
-            $content = '';
-        }
-
-        if ($close) {
-            $this->buffer .= $this->indent() . "<{$markup} " . $options . ">{$content}</{$markup}>{$this->newline}";
+            return $optionsContent;
         } else {
-
-            array_unshift($this->toClose, $markup);
-            $this->buffer .= $this->indent() . "<{$markup} " . $options . ">{$this->newline}";
+            return "";
         }
-
-        return $this;
     }
 
+    /**
+     * Get a number of TAB caracters in function of the open hierarchy
+     *
+     * @return string
+     */
     private function indent(): string
     {
         if ($this->humanReadable) {
@@ -171,21 +265,7 @@ class Html
         return $buffer;
     }
 
-    public function close($all = false, $except = 0)
-    {
-        if ($all && count($this->toClose)) {
-            $toclose = count($this->toClose) - $except;
-            for ($i = 0; $i < $toclose; $i++) {
-                $markup = array_pop($this->toClose);
-                $this->buffer .= $this->indent() . "</{$markup}>{$this->newline}";
-            }
-        } else {
-            $markup = array_pop($this->toClose);
-            $this->buffer .= $this->indent() . "</{$markup}>{$this->newline}";
-        }
 
-        return $this;
-    }
 
     public function getNextId()
     {
@@ -209,6 +289,11 @@ class Html
 
     public function getHtml($reset = true, $head = false)
     {
+        if (!empty($this->buffer)) {
+            $this->html = $this->buffer;
+            $this->buffer = "";
+        }
+
         if ($this->bodyOpen) {
             $this->html .= "</body>{$this->newline}";
         }
@@ -226,30 +311,13 @@ class Html
      * Shortcuts
      */
 
-    function preprint($in)
+    function preprint($in, $return = false)
     {
         $this->addPre(print_r($in, true));
-        echo $this->getHtml();
-    }
-
-    private function array2options($options)
-    {
-        $optionsContent = "";
-
-        if (is_array($options)) {
-            foreach ($options as $key => $data) {
-                if (is_array($data)) {
-                    foreach ($data as $subkey => $subdata) {
-                        $optionsContent .= $key . "-" . $subkey . '="' . $subdata . '" ';
-                    }
-                } else {
-                    $optionsContent .= $key . '="' . $data . '" ';
-                }
-            }
-
-            return $optionsContent;
+        if ($return) {
+            return $this->getHtml();
         } else {
-            return "";
+            echo $this->getHtml();
         }
     }
 
