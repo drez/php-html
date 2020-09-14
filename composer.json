@@ -1,0 +1,26 @@
+{
+    "name": "drez/phpHtml",
+    "description": "A class to write Html in PHP",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Frederic Vezina",
+            "email": "fred@apigoat.com",
+            "role": "Developer"
+        }
+    ],
+    "homepage": "https://github.com/drez/phpHtml",
+    "keywords": [
+        "html",
+        "helper"
+    ],
+    "require": {
+        "php": ">=5.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "phpHtml\\": "src"
+        }
+    }
+}
