@@ -70,6 +70,8 @@ class Html
      */
     private $autoId = true;
 
+    private $excludeAutoId = ['script', 'style'];
+
     /**
      * add incremental id to tags
      *
@@ -207,7 +209,7 @@ class Html
             unset($options['addclass']);
         }
 
-        if ($this->autoId) {
+        if ($this->autoId && !in_array($markup, $this->excludeAutoId)) {
             if (!isset($options['id'])) {
                 $options['id'] = 'auto' . $this->getNextId();
             }
