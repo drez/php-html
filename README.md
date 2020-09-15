@@ -2,7 +2,7 @@
 
 I hate HTML! I hate putting multiple language is PHP files. So I use a small class that produces HTML and add some shortcut.
 
-So I wrie HTML like that:
+So I write HTML like that:
 
 ```
 $Html = new Html('bootstrap', true);
@@ -37,3 +37,12 @@ $Html
     $html =  $Html->body(null, ['class' => 'body'])->addContainerFull($Html->getBuffer())->close()->getPage();
 
 ```
+
+# Features
+
+* Easy to add shortcut for the most use tag
+* Add classes automatically if needed
+
+# Use
+
+    composer require drez/php-html
