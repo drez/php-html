@@ -1,5 +1,5 @@
 {
-    "name": "drez/phpHtml",
+    "name": "drez/php-html",
     "description": "A class to write Html in PHP",
     "license": "MIT",
     "type": "library",
