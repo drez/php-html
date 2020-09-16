@@ -1,7 +1,5 @@
 <?php
 
-namespace App\Application\Helper\Html;
-
 class Html
 {
 
