@@ -5,6 +5,8 @@ I hate HTML! I hate putting multiple language is PHP files. So I use a small cla
 So I write HTML like that:
 
 ```
+use phpHtml\Html;
+
 $Html = new Html('bootstrap', true);
 
 $Html
