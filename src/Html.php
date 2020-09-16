@@ -1,5 +1,7 @@
 <?php
 
+namespace phpHtml;
+
 class Html
 {
 

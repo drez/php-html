@@ -20,7 +20,7 @@
     },
     "autoload": {
         "psr-4": {
-            "phpHtml\\": "src"
+            "phpHtml\\": "src/"
         }
     }
 }
