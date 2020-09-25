@@ -30,7 +30,7 @@ class Html
             'h3' => '',
             'ul' => '',
             'li' => '',
-            'table' => 'table',
+            'table' => 'table'
 
         ]
     ];
@@ -267,8 +267,6 @@ class Html
         return $buffer;
     }
 
-
-
     public function getNextId()
     {
         return $this->id++;
@@ -358,7 +356,22 @@ class Html
         return $this->markup('a', $close, $content, $options);
     }
 
-    function addHead($options)
+    public function modal($options = [])
+    {
+        $this
+            ->div(null, ['class' => 'modal fade', 'id' => $options['id'], 'role' => 'dialog', 'aria-labelledby' => $options['label'], 'aria-hidden' => $options['hidden']])
+            ->div(null, ['class' => 'modal-dialog', 'role' => 'document'])
+            ->div(null, ['class' => 'modal-content'])
+            ->div(null, ['class' => 'modal-header'])
+            ->addH5($options['title'], ['class' => 'modal-title'])
+            ->close()
+            ->addDiv($options['body'], ['class' => 'modal-body'])
+            ->div(null, ['class' => 'modal-footer'])
+            ->but(true, 'Close', ['class' => 'btn btn-secondary', 'data-dismiss' => 'modal'])
+            ->close('all');
+    }
+
+    public function addHead($options)
     {
         $this->head = "<head>";
         $this->head .= "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
