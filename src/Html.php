@@ -113,9 +113,7 @@ class Html
         }
 
         if (\method_exists($this, $method)) {
-            $this->$method($close, $args[0], $args[1]);
-        } else if (\method_exists($this, 'add' . \ucfirst($method))) {
-            $markup = $this->$method($close, $args[0], $args[1], $args[2]);
+            $this->$method($args[0], $args[1], $args[2], $close);
         } else {
             $markup = $this->markup($method, $close, $args[0], $args[1], $args[2]);
         }
@@ -321,27 +319,26 @@ class Html
         }
     }
 
-    public function jumbotron($close, $content = null)
+    public function jumbotron($content = null, $options = [], $return = false, $close = false)
     {
         $this->markup('div', $close, $content, ['class' => $this->class['jumbotron']]);
         return $this;
     }
 
-    public function container($close, $content = null)
+    public function container($content = null, $options = [], $return = false, $close = false)
     {
         $this->markup('div', $close, $content, ['class' => $this->class['container']]);
         return $this;
     }
 
-    public function containerFull($close, $content = null)
+    public function containerFull($content = null, $options = [], $return = false, $close = false)
     {
         $this->markup('div', $close, $content, ['class' => $this->class['container-fluid']]);
         return $this;
     }
 
-    public function but($close, $content = "", $options = [])
+    public function but($content = "", $options = [], $return = false, $close = true)
     {
-
         if (isset($this->class['button'])) {
             $options['class'] = $this->class['button'];
         }
@@ -356,22 +353,40 @@ class Html
         return $this->markup('a', $close, $content, $options);
     }
 
-    public function modal($options = [])
+    public function spinner($content = "", $options = [], $return = false, $close = true)
     {
-        $this
+        if ($return) {
+            $Html = new Html();
+        } else {
+            $Html = $this;
+        }
+        $Html
+            ->div(null, ['class' => 'spinner-border ' . $options['class'], 'role' => 'status', 'id' => $options['id']])
+            ->span($content, ['class' => 'sr-only'])
+            ->close('all');
+
+        if ($return) {
+            $Html = $Html->getHtml();
+        }
+        return $Html;
+    }
+
+    public function modal($content = "", $options = [], $return = false, $close = true)
+    {
+        return $this
             ->div(null, ['class' => 'modal fade', 'id' => $options['id'], 'role' => 'dialog', 'aria-labelledby' => $options['label'], 'aria-hidden' => $options['hidden']])
             ->div(null, ['class' => 'modal-dialog', 'role' => 'document'])
             ->div(null, ['class' => 'modal-content'])
             ->div(null, ['class' => 'modal-header'])
             ->addH5($options['title'], ['class' => 'modal-title'])
             ->close()
-            ->addDiv($options['body'], ['class' => 'modal-body'])
+            ->addDiv($content, ['class' => 'modal-body'])
             ->div(null, ['class' => 'modal-footer'])
-            ->but(true, 'Close', ['class' => 'btn btn-secondary', 'data-dismiss' => 'modal'])
+            ->but('Close', ['class' => 'btn btn-secondary', 'data-dismiss' => 'modal'], true)
             ->close('all');
     }
 
-    public function addHead($options)
+    public function addHead($options = [])
     {
         $this->head = "<head>";
         $this->head .= "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
